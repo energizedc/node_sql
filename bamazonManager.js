@@ -30,10 +30,10 @@ console.log("                                        ");
 function afterConnection() {
     connection.query("SELECT * FROM products", function (err, res, fields) {
         if (err) throw err;
-       
 
 
-       // console.table( res);
+
+        // console.table( res);
 
         inquirer
             .prompt([
@@ -58,6 +58,10 @@ function afterConnection() {
                             value: '4',
                             name: 'Add New Product',
                         },
+                        {
+                            value: '5',
+                            name: 'Exit',
+                        },
                     ],
                 },
             ])
@@ -71,33 +75,125 @@ function afterConnection() {
                 switch (parseInt(answers.manager)) {
                     case 1: productList(res);
                         break;
-                    case 2: replenishmentList(answers.manager);
+                    case 2: replenishmentList();
                         break;
-                    case 3: addInventory(answers.manager);
+                    case 3: addInventory();
                         break;
-                    case 4: addProduct(answers.manager);
+                    case 4: addProduct();
                         break;
+                    case 5:
+                            connection.end();
+                            process.exit();
+                            break;
+
                     default: console.log("\nInvalid Option");
                 }
             })
         /////////////////////////////////////////////////////////////////////   
         ////*****      Display Current Product List                *********/
         /////////////////////////////////////////////////////////////////////
-            
+
         function productList(res) {
             console.table(res)
             console.log("*******************************************************************");
+            afterConnection();
         }
 
         /////////////////////////////////////////////////////////////////////   
         ////*****      Display Items To Be Replenished             *********/
         /////////////////////////////////////////////////////////////////////
         function replenishmentList() {
-            connection.query('Select * FROM products WHERE stock_qty < 5 ', 
+            connection.query('Select * FROM products WHERE stock_qty < 5 ',
                 function (err, res, fields) {
+                    if (err) { console.log(err) };
+                    console.table(res)
+                    console.log("*******************************************************************");
+                    afterConnection();
+                }
+            )
+        }
+    }
+    )
+};
+
+/////////////////////////////////////////////////////////////////////   
+////*****     Adding New Items                            *********/
+/////////////////////////////////////////////////////////////////////
+
+function addProduct() {
+    console.log("Get New Item Information ");
+    var questions = [
+        {
+            type: 'input',
+            name: 'productName',
+            message: "What is the product name?"
+        },
+        {
+            type: 'input',
+            name: 'deptName',
+            message: "What's the dept name ?",
+        },
+        {
+            type: 'input',
+            name: 'sellingPrice',
+            message: "What's the selling price ?",
+        },
+        {
+            type: 'input',
+            name: 'inv_qty',
+            message: "What's the initial inventory qty ?",
+        }
+    ]
+    inquirer.prompt(questions).then(answers => {
+        console.log(JSON.stringify(answers, null, '  '));
+        var newQty = parseInt(answers.inv_qty);
+        var newPrice = parseInt(answers.sellingPrice);
+
+
+        connection.query("INSERT INTO products SET ?", { product_name: answers.productName, dept_name: answers.deptName, selling_price: newPrice, stock_qty: newQty },
+            function (err, res) {
                 if (err) { console.log(err) };
                 console.table(res)
                 console.log("*******************************************************************");
+                afterConnection();
             }
-        )}}
-    )};
+        )
+    }
+    )
+}
+
+/////////////////////////////////////////////////////////////////////   
+////*****     Updating inventory Quantity                  *********/
+/////////////////////////////////////////////////////////////////////
+
+function addInventory() {
+    console.log("Get Product Qty Info ");
+    var questions = [
+        {
+            type: 'input',
+            name: 'itemNum',
+            message: "What is the item number you want to modify?"
+        },
+
+        {
+            type: 'input',
+            name: 'inv_qty2',
+            message: "What's the qty you want to add ?",
+        }
+    ]
+    inquirer.prompt(questions).then(answers => {
+        console.log(JSON.stringify(answers, null, '  '));
+        var newQty = parseInt(answers.inv_qty2);
+        var newItem = parseInt(answers.itemNum);
+
+        var QUERY = "update products set stock_qty = stock_qty + " + newQty + " WHERE item_id =" +  newItem
+
+      //  connection.query("UPDATE products SET ? WHERE ?", { stock_qty = stock_qty + newQty }, { item_id = newItem },
+      connection.query(QUERY, function (err, res) {
+                if (err) { console.log(err) };
+                console.table(res)
+                console.log("*******************************************************************");
+                afterConnection();
+            })
+    })
+}

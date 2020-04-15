@@ -19,23 +19,19 @@ var connection = mysql.createConnection({
 
 connection.connect(function (err) {
   if (err) throw err;
-  console.log("connected as id " + connection.threadId);
-  afterConnection();
+    console.log("connected as id " + connection.threadId);
+    console.log("                                        ");
+    afterConnection();
 });
 console.log("*****************************************************");
 console.log("*****   W E L C O M E   T O   B A M A Z O N   *******");
 console.log("*****************************************************");
 console.log("                                        ");
-
+//////////////////////////////////////////////////////////////////////////////////////////
 function afterConnection() {
   connection.query("SELECT * FROM products", function (err, res, fields) {
     if (err) throw err;
-//    for (var i = 0; i < res.length; i++) {
-//      console.log(res[i].item_id, res[i].product_name + "       $ " + res[i].selling_price)
-//      console.log("*****************************************************");
-//    }
-
-console.table(res);
+            console.table(res);
 
     inquirer.prompt([
       {
@@ -58,22 +54,59 @@ console.table(res);
       purchaseOrder(itemNum, qtyOrdered);
     });
   });
-
+/////////////////////////////////////////////////////////////////////////////////////////
   function purchaseOrder(itemNum, qtyOrdered) {
     connection.query('Select * FROM products WHERE item_id = ' + itemNum, function (err, res) {
       if (err) { console.log(err) };
 
       if (qtyOrdered <= res[0].stock_qty) {
         var totalCost = res[0].selling_price * qtyOrdered;
-        console.log("Good news your order is in stock!");
-        console.log("Your total cost for " + qtyOrdered + " " + res[0].product_name + " is   $ " + totalCost + " Thank you!");
+        console.log("***    Good news your order is in stock!");
+        console.log("***    Your total cost for " + qtyOrdered + " " + res[0].product_name + " is   $ " + totalCost);
+        console.log("***     T h a n k   Y o u !!              ***");  
+        console.log("***  ");
+        console.log("  ");
 
-        connection.query("UPDATE products SET stock_qty = stock_qty - " + qtyOrdered + " WHERE item_id = " + itemNum);
+        connection.query("UPDATE products SET stock_qty = stock_qty - " + qtyOrdered + " WHERE item_id = " + itemNum, function(err,res){
+          purchaseMore()
+        });
+
       } else {
+
+        console.log("******************************************************************************************************");  
         console.log("Insufficient quantity, sorry we do not have enough " + res[0].product_name + "to complete your order.");
-      };
-      afterConnection();
+        console.log("******************************************************************************************************");
+        console.log("  ");
+        console.log("  ");
+        purchaseMore()
+
+      }; 
+      
+      
     });
-  }
- // connection.end();
-};
+   }};
+  
+  
+    ///////////////////////////////////////////////////////////////////////
+    /////   Ask customer if they want to make another purchase     ////////
+    ///////////////////////////////////////////////////////////////////////
+  
+
+ 
+  function purchaseMore() {
+      inquirer.prompt([
+        {
+          name: "anotherPurch",
+          message: "Do you want to make another purchase?  Y or N"
+        }
+      ]).then(function (answers) {
+        console.log(answers.anotherPurch);
+        if (answers.anotherPurch === "y" ) {
+            afterConnection();
+        }
+        else {
+          console.log(" B Y E ");
+          connection.end();
+          process.exit;
+        }}     
+      )}
