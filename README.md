@@ -30,7 +30,7 @@ To execute liri.js::
 
 
 
- ###URL### Use this URL to view - https://github.com/energizedc/liri-node-app/blob/master/screen_shots_of_executing_cmds.docx
+ ###URL### Use this URL to view - https://github.com/energizedc/node_sql.git
  
  
 Created by Donna Johnson
