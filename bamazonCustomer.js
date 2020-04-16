@@ -54,7 +54,7 @@ function afterConnection() {
       purchaseOrder(itemNum, qtyOrdered);
     });
   });
-/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
   function purchaseOrder(itemNum, qtyOrdered) {
     connection.query('Select * FROM products WHERE item_id = ' + itemNum, function (err, res) {
       if (err) { console.log(err) };
